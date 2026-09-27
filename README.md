@@ -4,7 +4,7 @@ Website EcoSort merupakan project aplikasi web untuk membantu proses pengelolaan
 
 ## Preview Web
 
-🌐 [Buka Website EcoSort](https://ecosort.vercel.app)
+🌐 [Buka Website EcoSort](https://eco-sort-ob4pnp0gb-veltros-projects.vercel.app)
 
 ## Teknologi
 
