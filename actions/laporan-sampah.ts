@@ -144,17 +144,57 @@ export async function updateLaporanStatus(
   }
 
   try {
+    const existing = await prisma.laporanSampah.findUnique({
+      where: { id },
+      include: { jenisSampah: true },
+    });
+
+    if (!existing) {
+      return { success: false, message: "Laporan tidak ditemukan" };
+    }
+
+    const newStatus = validated.data.status;
+    const isNowFinished = newStatus === "SELESAI" && existing.status !== "SELESAI";
+
     await prisma.laporanSampah.update({
       where: { id },
-      data: { status: validated.data.status },
+      data: { status: newStatus },
     });
+
+    // Otomatis berikan reward poin jika laporan dinyatakan SELESAI
+    if (isNowFinished) {
+      const tarifPerKg = existing.jenisSampah.poinPerKg || 1000;
+      const poinDihasilkan = Math.round(existing.berat * tarifPerKg);
+
+      await prisma.user.update({
+        where: { id: existing.userId },
+        data: { poin: { increment: poinDihasilkan } },
+      });
+
+      await prisma.transaksiPoin.create({
+        data: {
+          userId: existing.userId,
+          tipe: "REWARD",
+          jumlahPoin: poinDihasilkan,
+          nominalRupiah: poinDihasilkan,
+          keterangan: `Reward Sampah: ${existing.berat} kg ${existing.jenisSampah.namaJenis}`,
+          status: "BERHASIL",
+          laporanId: existing.id,
+        },
+      });
+    }
 
     revalidatePath("/dashboard/admin/laporan");
     revalidatePath("/dashboard/admin");
+    revalidatePath("/dashboard/user/laporan");
+    revalidatePath("/dashboard/user/transaksi");
+    revalidatePath("/dashboard/admin/transaksi");
 
     return {
       success: true,
-      message: "Status laporan berhasil diperbarui",
+      message: isNowFinished
+        ? "Status laporan diperbarui ke Selesai & Reward Poin berhasil dikirim ke warga!"
+        : "Status laporan berhasil diperbarui",
     };
   } catch (error) {
     console.error("Update status error:", error);

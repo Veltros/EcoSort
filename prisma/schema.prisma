@@ -27,6 +27,17 @@ enum StatusLaporan {
   SELESAI
 }
 
+enum TipeTransaksiPoin {
+  REWARD
+  PENUKARAN
+}
+
+enum StatusTransaksiPoin {
+  BERHASIL
+  PENDING
+  DITOLAK
+}
+
 // ============================================================
 // MODELS
 // ============================================================
@@ -38,17 +49,20 @@ model User {
   noHp      String   @unique
   password  String
   role      Role     @default(USER)
+  poin      Float    @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
   laporanSampah LaporanSampah[]
   userWilayah   UserWilayah[]   // Many-to-Many via pivot
+  transaksiPoin TransaksiPoin[]
 }
 
 model JenisSampah {
   id        String   @id @default(uuid())
   namaJenis String   @unique
+  poinPerKg Float    @default(1000)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -104,6 +118,9 @@ model LaporanSampah {
 
   // Relations (One-to-One)
   fotoSampah FotoSampah?
+
+  // Relations (One-to-Many)
+  transaksiPoin TransaksiPoin[]
 }
 
 model FotoSampah {
@@ -115,4 +132,26 @@ model FotoSampah {
   // Foreign Key (Unique = One-to-One)
   laporanId String        @unique
   laporan   LaporanSampah @relation(fields: [laporanId], references: [id], onDelete: Cascade)
+}
+
+// ============================================================
+// TRANSAKSI POIN — Bank Sampah (Reward & Penukaran E-Wallet)
+// ============================================================
+
+model TransaksiPoin {
+  id            String              @id @default(uuid())
+  tipe          TipeTransaksiPoin
+  jumlahPoin    Float
+  nominalRupiah Float
+  keterangan    String
+  metode        String?             // DANA, GOPAY, OVO, SHOPEEPAY
+  nomorTujuan   String?             // No HP tujuan e-wallet
+  status        StatusTransaksiPoin @default(BERHASIL)
+  createdAt     DateTime            @default(now())
+
+  userId        String
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  laporanId     String?
+  laporan       LaporanSampah?      @relation(fields: [laporanId], references: [id], onDelete: SetNull)
 }

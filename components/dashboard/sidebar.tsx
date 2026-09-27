@@ -12,6 +12,8 @@ import {
   X,
   ChevronRight,
   Users,
+  Wallet,
+  Receipt,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -53,6 +55,11 @@ const adminNavItems: NavItem[] = [
     href: "/dashboard/admin/pemantauan",
     icon: Users,
   },
+  {
+    label: "Transaksi Bank Sampah",
+    href: "/dashboard/admin/transaksi",
+    icon: Receipt,
+  },
 ];
 
 const userNavItems: NavItem[] = [
@@ -65,6 +72,11 @@ const userNavItems: NavItem[] = [
     label: "Laporan Saya",
     href: "/dashboard/user/laporan",
     icon: FileText,
+  },
+  {
+    label: "Bank Sampah (Tukar Poin)",
+    href: "/dashboard/user/transaksi",
+    icon: Wallet,
   },
 ];
 

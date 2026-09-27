@@ -42,22 +42,28 @@ async function main() {
   console.log(`   - ${userTest.nama} (${userTest.email}) | Role: ${userTest.role}\n`);
 
   // ============================================================
-  // SEED JENIS SAMPAH
+  // SEED JENIS SAMPAH (dengan Nilai Tukar Poin / kg)
   // ============================================================
-  const jenisSampahData = ["Organik", "Non-Organik", "B3"];
+  const jenisSampahData = [
+    { namaJenis: "Organik", poinPerKg: 1000 },
+    { namaJenis: "Non-Organik", poinPerKg: 3000 },
+    { namaJenis: "B3", poinPerKg: 5000 },
+  ];
 
   const createdJenis = [];
-  for (const namaJenis of jenisSampahData) {
+  for (const item of jenisSampahData) {
     const jenis = await prisma.jenisSampah.upsert({
-      where: { namaJenis },
-      update: {},
-      create: { namaJenis },
+      where: { namaJenis: item.namaJenis },
+      update: { poinPerKg: item.poinPerKg },
+      create: { namaJenis: item.namaJenis, poinPerKg: item.poinPerKg },
     });
     createdJenis.push(jenis);
   }
 
-  console.log(`✅ Jenis Sampah seeded:`);
-  createdJenis.forEach((j) => console.log(`   - ${j.namaJenis}`));
+  console.log(`✅ Jenis Sampah & Tarif Poin seeded:`);
+  createdJenis.forEach((j) =>
+    console.log(`   - ${j.namaJenis} (Rp ${j.poinPerKg.toLocaleString("id-ID")}/kg)`)
+  );
   console.log("");
 
   // ============================================================
@@ -147,6 +153,57 @@ async function main() {
   console.log(`✅ UserWilayah (Many-to-Many) seeded:`);
   console.log(`   - ${userTest.nama} → Jakarta Utara, Jakarta Barat, Jakarta Timur`);
   console.log(`   (demonstrasi relasi Many-to-Many User ↔ Wilayah)\n`);
+
+  // ============================================================
+  // SEED TRANSAKSI POIN (Bank Sampah Reward & E-Wallet)
+  // ============================================================
+  await prisma.user.update({
+    where: { id: userTest.id },
+    data: { poin: 22000 },
+  });
+
+  // Hapus transaksi lama jika ada
+  await prisma.transaksiPoin.deleteMany({
+    where: { userId: userTest.id },
+  });
+
+  await prisma.transaksiPoin.createMany({
+    data: [
+      {
+        userId: userTest.id,
+        tipe: "REWARD",
+        jumlahPoin: 16500,
+        nominalRupiah: 16500,
+        keterangan: "Reward Laporan: 5.5 kg Organik di Jakarta Utara",
+        status: "BERHASIL",
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+      },
+      {
+        userId: userTest.id,
+        tipe: "REWARD",
+        jumlahPoin: 15500,
+        nominalRupiah: 15500,
+        keterangan: "Reward Laporan: Penyetoran sampah daur ulang",
+        status: "BERHASIL",
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      },
+      {
+        userId: userTest.id,
+        tipe: "PENUKARAN",
+        jumlahPoin: 10000,
+        nominalRupiah: 10000,
+        keterangan: "Pencairan Saldo ke DANA (081234567890)",
+        metode: "DANA",
+        nomorTujuan: "081234567890",
+        status: "BERHASIL",
+        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+      },
+    ],
+  });
+
+  console.log(`✅ Transaksi Bank Sampah seeded:`);
+  console.log(`   - Saldo Poin ${userTest.nama}: Rp 22.000 (22.000 Poin)`);
+  console.log(`   - Riwayat mutasi transaksi: 2 Reward (+), 1 Penukaran DANA (-)\n`);
 
   console.log("🎉 Seeding selesai!\n");
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
