@@ -1,65 +1,53 @@
-# 🌿 EcoSort — Sistem Informasi Pengelolaan Sampah DKI Jakarta
+# EcoSort
 
-> Platform digital modern berbasis web untuk pelaporan, pemantauan wilayah, dan transaksi Bank Sampah (Reward Poin & E-Wallet) terpadu di wilayah DKI Jakarta.
+Website EcoSort merupakan project aplikasi web untuk membantu proses pengelolaan, pelaporan, dan Bank Sampah wilayah DKI Jakarta.
 
----
+## Preview Web
 
-## 🚀 Fitur Utama
+🌐 [Buka Website EcoSort](https://ecosort.vercel.app)
 
-1. **Autentikasi Multi-Peran (Multi-Role Auth):**
-   - **Warga (User):** Pelaporan sampah, upload foto bukti, dompet Bank Sampah (Reward Poin & Penarikan Saldo E-Wallet).
-   - **Administrator (Admin):** Dashboard statistik kota, verifikasi dan approval laporan, manajemen master data (Wilayah & Jenis Sampah), penugasan pemantauan wilayah.
+## Teknologi
 
-2. **Transaksi Bank Sampah & E-Wallet (Ekonomi Sirkular):**
-   - **Reward Otomatis:** Perhitungan poin otomatis saat laporan selesai diverifikasi ($Poin = Berat \times Tarif\ Jenis\ Sampah$).
-   - **Pencairan Saldo:** Penukaran poin ke dompet digital (DANA, GoPay, OVO, ShopeePay) dengan riwayat mutasi lengkap.
+- Next.js 16 (App Router)
+- TypeScript
+- Prisma ORM
+- PostgreSQL (Neon Serverless)
+- NextAuth.js v5
+- TailwindCSS & Shadcn UI
 
-3. **Pemantauan Wilayah (Relasi Many-to-Many):**
-   - Penugasan petugas/warga pemantau ke berbagai wilayah administratif di DKI Jakarta melalui tabel pivot relasional `UserWilayah`.
+## Fitur Utama
 
-4. **Desain Database RDBMS PostgreSQL & Relasi Lengkap:**
-   - **One-to-One (1:1):** `LaporanSampah` ↔ `FotoSampah`
-   - **One-to-Many (1:N):** `User` → `LaporanSampah`, `Wilayah` → `LaporanSampah`, `JenisSampah` → `LaporanSampah`
-   - **Many-to-Many (N:N):** `User` ↔ `Wilayah` (via `UserWilayah`)
+- **Multi-Role User & Admin:** Hak akses terpisah untuk Warga dan Administrator.
+- **Pelaporan Sampah:** Pelaporan tumpukan sampah dilengkapi upload bukti foto fisik.
+- **Bank Sampah (Transaksi Poin):** Perhitungan reward poin otomatis per kg sampah dan penarikan saldo ke E-Wallet (DANA, GoPay, OVO, ShopeePay).
+- **Pemantauan Wilayah:** Relasi Many-to-Many penugasan petugas pemantau ke berbagai wilayah DKI Jakarta.
+- **Validasi & Keamanan:** Enkripsi password Bcrypt, validasi Zod, dan perlindungan integritas referensial database.
 
----
+## Cara Menjalankan Project
 
-## 🛠️ Tech Stack
+1. **Install dependency:**
+   ```bash
+   npm install
+   ```
 
-- **Framework:** Next.js 16 (App Router & Turbopack)
-- **Language:** TypeScript
-- **Database:** PostgreSQL (Cloud Neon Serverless)
-- **ORM:** Prisma 6
-- **Autentikasi:** NextAuth.js v5 (Auth.js) dengan Enkripsi Bcrypt
-- **Styling & UI:** TailwindCSS, Shadcn UI, Lucide Icons, Sonner Toast
-- **Deployment:** Vercel (Production Cloud)
+2. **Setup Environment (.env):**
+   ```env
+   DATABASE_URL="postgresql://user:password@host/neondb?sslmode=require"
+   NEXTAUTH_SECRET="secret-key-kamu"
+   ```
 
----
+3. **Migrasi & Seed Database:**
+   ```bash
+   npx prisma db push
+   npm run db:seed
+   ```
 
-## 📂 Struktur Direktori Proyek
+4. **Jalankan server development:**
+   ```bash
+   npm run dev
+   ```
 
-```text
-ecosort/
-├── actions/              # Server Actions (Auth, Laporan, Wilayah, Transaksi, Pemantauan)
-├── app/                  # App Router Next.js (Dashboard Admin, Dashboard User, Auth, API)
-├── components/           # Komponen UI (Formulir, Dialog, Tabel, Filter, Navbar, Sidebar)
-├── lib/                  # Utilitas (Prisma Client, NextAuth Config, Validasi Zod)
-├── prisma/               # Skema Database & Migrasi SQL PostgreSQL
-│   ├── migrations/       # Riwayat Migrasi SQL
-│   ├── schema.prisma     # Definisi Skema RDBMS
-│   └── seed.ts           # Seeder Data Awal & Demo
-└── public/               # Aset statis & logo
-```
+## Akun Demo untuk Testing
 
----
-
-## 📋 Akun Demo untuk Pengujian
-
-| Peran (Role) | Email | Password |
-|---|---|---|
-| **Administrator** | `admin@ecosort.com` | `admin123` |
-| **Warga (User)** | `user@ecosort.com` | `user123` |
-
----
-
-© 2026 EcoSort. Diciptakan untuk Lingkungan Jakarta yang Lebih Bersih, Tertib, dan Berkelanjutan.
+- **Administrator:** `admin@ecosort.com` / `admin123`
+- **Warga (User):** `user@ecosort.com` / `user123`
