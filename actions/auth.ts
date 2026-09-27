@@ -15,9 +15,9 @@ export async function registerAction(
   formData: FormData
 ): Promise<ActionResponse> {
   const rawData = {
-    nama: formData.get("nama") as string,
-    email: formData.get("email") as string,
-    noHp: formData.get("noHp") as string,
+    nama: (formData.get("nama") as string)?.trim(),
+    email: (formData.get("email") as string)?.trim().toLowerCase(),
+    noHp: (formData.get("noHp") as string)?.trim().replace(/[^0-9]/g, ""),
     password: formData.get("password") as string,
     confirmPassword: formData.get("confirmPassword") as string,
   };
@@ -93,7 +93,7 @@ export async function loginAction(
   formData: FormData
 ): Promise<ActionResponse> {
   const rawData = {
-    email: formData.get("email") as string,
+    email: (formData.get("email") as string)?.trim().toLowerCase(),
     password: formData.get("password") as string,
   };
 
