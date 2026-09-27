@@ -8,43 +8,37 @@ import { writeFile, mkdir, unlink } from "fs/promises";
 import { join } from "path";
 import type { ActionResponse } from "@/types";
 
-// Helper to save file
+// Helper to save file as Base64 Data URL (100% serverless compatible)
 async function saveUploadedFile(file: File): Promise<string> {
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
-
-  const uploadsDir = join(process.cwd(), "public", "uploads");
-  await mkdir(uploadsDir, { recursive: true });
-
-  const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-  const filename = `${uniqueSuffix}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-  const filePath = join(uploadsDir, filename);
-
-  await writeFile(filePath, buffer);
-  return `/uploads/${filename}`;
+  const mimeType = file.type || "image/jpeg";
+  const base64 = buffer.toString("base64");
+  return `data:${mimeType};base64,${base64}`;
 }
 
-// Helper to delete file
+// Helper to delete file (safe for both local files and base64 URLs)
 async function deleteLocalFile(imageUrl: string) {
+  if (!imageUrl || imageUrl.startsWith("data:")) return;
   try {
     const filename = imageUrl.replace("/uploads/", "");
     const filePath = join(process.cwd(), "public", "uploads", filename);
     await unlink(filePath);
-  } catch (error) {
-    console.error("Gagal menghapus file gambar lokal:", error);
+  } catch {
+    // Ignore error on serverless / read-only filesystem
   }
 }
 
 // ============================================================
-// CREATE LAPORAN (USER ONLY)
+// CREATE LAPORAN
 // ============================================================
 
 export async function createLaporanSampah(
   formData: FormData
 ): Promise<ActionResponse> {
   const session = await auth();
-  if (!session || session.user.role !== "USER") {
-    return { success: false, message: "Unauthorized" };
+  if (!session?.user?.id) {
+    return { success: false, message: "Silakan login terlebih dahulu" };
   }
 
   const rawData = {
@@ -73,6 +67,14 @@ export async function createLaporanSampah(
     };
   }
 
+  if (fotoFile.size > 3.5 * 1024 * 1024) {
+    return {
+      success: false,
+      message: "Ukuran foto maksimal 3.5 MB",
+      errors: { foto: ["Ukuran foto maksimal 3.5 MB"] },
+    };
+  }
+
   let imageUrl = "";
   try {
     imageUrl = await saveUploadedFile(fotoFile);
@@ -95,6 +97,8 @@ export async function createLaporanSampah(
 
     revalidatePath("/dashboard/user/laporan");
     revalidatePath("/dashboard/user");
+    revalidatePath("/dashboard/admin/laporan");
+    revalidatePath("/dashboard/admin");
 
     return {
       success: true,

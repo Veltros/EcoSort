@@ -44,6 +44,12 @@ export function LaporanForm({ jenisSampahList, wilayahList }: LaporanFormProps) 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 3.5 * 1024 * 1024) {
+        toast.error("Ukuran foto maksimal 3.5 MB");
+        e.target.value = "";
+        setImagePreview(null);
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
