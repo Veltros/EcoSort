@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum StatusLaporan {
+  PENDING
+  DIPROSES
+  SELESAI
+}
+
+// ============================================================
+// MODELS
+// ============================================================
+
+model User {
+  id        String   @id @default(uuid())
+  nama      String
+  email     String   @unique
+  noHp      String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  laporanSampah LaporanSampah[]
+  userWilayah   UserWilayah[]   // Many-to-Many via pivot
+}
+
+model JenisSampah {
+  id        String   @id @default(uuid())
+  namaJenis String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  laporanSampah LaporanSampah[]
+}
+
+model Wilayah {
+  id          String   @id @default(uuid())
+  namaWilayah String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  laporanSampah LaporanSampah[]
+  userWilayah   UserWilayah[]   // Many-to-Many via pivot
+}
+
+// ============================================================
+// PIVOT TABLE — Many-to-Many: User ↔ Wilayah
+// Satu user bisa memantau banyak wilayah
+// Satu wilayah bisa dipantau banyak user
+// ============================================================
+
+model UserWilayah {
+  userId    String
+  wilayahId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wilayah Wilayah @relation(fields: [wilayahId], references: [id], onDelete: Cascade)
+
+  @@id([userId, wilayahId])
+}
+
+model LaporanSampah {
+  id            String        @id @default(uuid())
+  berat         Float
+  tanggalLapor  DateTime
+  status        StatusLaporan @default(PENDING)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Foreign Keys
+  userId        String
+  jenisSampahId String
+  wilayahId     String
+
+  // Relations (Many-to-One)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jenisSampah JenisSampah @relation(fields: [jenisSampahId], references: [id], onDelete: Restrict)
+  wilayah     Wilayah     @relation(fields: [wilayahId], references: [id], onDelete: Restrict)
+
+  // Relations (One-to-One)
+  fotoSampah FotoSampah?
+}
+
+model FotoSampah {
+  id        String   @id @default(uuid())
+  imageUrl  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Foreign Key (Unique = One-to-One)
+  laporanId String        @unique
+  laporan   LaporanSampah @relation(fields: [laporanId], references: [id], onDelete: Cascade)
+}
