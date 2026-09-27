@@ -128,39 +128,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Demo credentials */}
-      <div className="rounded-2xl border border-dashed border-[#FBBF24] bg-[#FFFBEB] p-5">
-        <div className="flex items-start gap-3">
-          <div className="text-lg">🔑</div>
-          <div>
-            <p className="text-sm font-semibold text-[#92400E] mb-2">
-              Akun Demo untuk Testing
-            </p>
-            <div className="space-y-1 text-xs text-[#78350F]">
-              <p>
-                <span className="font-semibold">Admin:</span>{" "}
-                <code className="bg-amber-100 rounded px-1.5 py-0.5 font-mono">
-                  admin@ecosort.com
-                </code>{" "}
-                /{" "}
-                <code className="bg-amber-100 rounded px-1.5 py-0.5 font-mono">
-                  admin123
-                </code>
-              </p>
-              <p>
-                <span className="font-semibold">User:</span>{" "}
-                <code className="bg-amber-100 rounded px-1.5 py-0.5 font-mono">
-                  user@ecosort.com
-                </code>{" "}
-                /{" "}
-                <code className="bg-amber-100 rounded px-1.5 py-0.5 font-mono">
-                  user123
-                </code>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
