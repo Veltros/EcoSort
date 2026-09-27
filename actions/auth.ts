@@ -91,7 +91,7 @@ export async function registerAction(
 
 export async function loginAction(
   formData: FormData
-): Promise<ActionResponse> {
+): Promise<ActionResponse<{ redirectUrl: string }>> {
   const rawData = {
     email: (formData.get("email") as string)?.trim().toLowerCase(),
     password: formData.get("password") as string,
@@ -114,9 +114,18 @@ export async function loginAction(
       redirect: false,
     });
 
+    const user = await prisma.user.findUnique({
+      where: { email: validated.data.email },
+      select: { role: true },
+    });
+
+    const redirectUrl =
+      user?.role === "ADMIN" ? "/dashboard/admin" : "/dashboard/user";
+
     return {
       success: true,
       message: "Login berhasil!",
+      data: { redirectUrl },
     };
   } catch (error) {
     if (error instanceof AuthError) {

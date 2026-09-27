@@ -24,7 +24,8 @@ export default function LoginPage() {
 
       if (result.success) {
         toast.success(result.message);
-        window.location.href = "/";
+        const target = (result.data as { redirectUrl?: string })?.redirectUrl || "/dashboard/user";
+        window.location.href = target;
       } else {
         if (result.errors) {
           setErrors(result.errors);
